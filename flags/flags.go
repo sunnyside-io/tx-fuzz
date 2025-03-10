@@ -44,6 +44,12 @@ var (
 		Value: 0,
 	}
 
+	AccountsIncrementIntervalFlag = &cli.IntFlag{
+		Name:  "accounts_increment_interval",
+		Usage: "Number of blocks before the account used per block increments",
+		Value: 0,
+	}
+
 	GasLimitFlag = &cli.IntFlag{
 		Name:  "gaslimit",
 		Usage: "Gas limit used for transactions",
@@ -63,6 +69,7 @@ var (
 		CorpusFlag,
 		RpcFlag,
 		TxCountFlag,
+		AccountsIncrementIntervalFlag,
 		CountFlag,
 		GasLimitFlag,
 		SlotTimeFlag,

@@ -11,13 +11,20 @@ import (
 
 type Spam func(*Config, *ecdsa.PrivateKey, *filler.Filler) error
 
-func SpamTransactions(config *Config, fun Spam) error {
-	fmt.Printf("Spamming %v transactions per account on %v accounts with seed: 0x%x\n", config.N, len(config.keys), config.seed)
+func SpamTransactions(config *Config, fun Spam, spamCount int) error {
+	keyCount := len(config.keys)
 
-	errCh := make(chan error, len(config.keys))
+	// Setup tx count
+	accInc := config.AccountsIncrementIntervalFlag
+	if accInc != 0 {
+		keyCount = spamCount / accInc
+	}
+
+	fmt.Printf("Spamming %v transactions per account on %v accounts with seed: 0x%x\n", config.N, keyCount, config.seed)
+	errCh := make(chan error, keyCount)
 	var wg sync.WaitGroup
-	wg.Add(len(config.keys))
-	for _, key := range config.keys {
+	wg.Add(keyCount)
+	for _, key := range config.keys[:keyCount] {
 		// Setup randomness uniquely per key
 		random := make([]byte, 10000)
 		config.mut.FillBytes(&random)

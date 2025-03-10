@@ -143,7 +143,7 @@ func CreateAddresses(N int) ([]string, []string) {
 	return keys, addrs
 }
 
-func Airdrop(config *Config, value *big.Int) error {
+func Airdrop(config *Config, value *big.Int, spamCount int) error {
 	backend := ethclient.NewClient(config.backend)
 	sender := crypto.PubkeyToAddress(config.faucet.PublicKey)
 	fmt.Printf("Airdrop faucet is at %x\n", sender)
@@ -153,7 +153,19 @@ func Airdrop(config *Config, value *big.Int) error {
 		fmt.Printf("error getting chain ID; could not airdrop: %v\n", err)
 		return err
 	}
-	for _, addr := range config.keys {
+
+	keyCount := len(config.keys)
+	// Setup tx count
+	accInc := config.AccountsIncrementIntervalFlag
+	if accInc != 0 {
+		keyCount = spamCount / accInc
+	}
+	if keyCount == 0 {
+		keyCount = 1
+	}
+
+	keys := config.keys[:keyCount]
+	for _, addr := range keys {
 		nonce, err := backend.PendingNonceAt(context.Background(), sender)
 		if err != nil {
 			fmt.Printf("error getting pending nonce; could not airdrop: %v\n", err)

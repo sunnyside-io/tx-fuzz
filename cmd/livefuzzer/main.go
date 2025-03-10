@@ -92,7 +92,7 @@ func runAirdrop(c *cli.Context) error {
 	}
 	txPerAccount := config.N
 	airdropValue := new(big.Int).Mul(big.NewInt(int64(txPerAccount*100000)), big.NewInt(params.GWei))
-	spammer.Airdrop(config, airdropValue)
+	spammer.Airdrop(config, airdropValue, 100)
 	return nil
 }
 
@@ -100,14 +100,22 @@ func spam(config *spammer.Config, spamFn spammer.Spam, airdropValue *big.Int) er
 	// Make sure the accounts are unstuck before sending any transactions
 	fmt.Println("Unstucking")
 	spammer.Unstuck(config)
+
+	spamCount := 0
+
 	for {
-		fmt.Println("Airdropping")
-		if err := spammer.Airdrop(config, airdropValue); err != nil {
-			return err
+		if spamCount%config.AccountsIncrementIntervalFlag == 0 { // Reduce the frequency of airdrop
+			fmt.Println("Airdropping")
+			value := new(big.Int).Mul(big.NewInt(50), airdropValue)
+			if err := spammer.Airdrop(config, value, spamCount); err != nil {
+				return err
+			}
 		}
+
 		fmt.Println("Spamming")
-		spammer.SpamTransactions(config, spamFn)
+		spammer.SpamTransactions(config, spamFn, spamCount)
 		time.Sleep(time.Duration(config.SlotTime) * time.Second)
+		spamCount += 1
 	}
 }
 
