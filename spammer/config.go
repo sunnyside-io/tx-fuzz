@@ -22,13 +22,14 @@ import (
 type Config struct {
 	backend *rpc.Client // connection to the rpc provider
 
-	N          uint64              // number of transactions send per account
-	faucet     *ecdsa.PrivateKey   // private key of the faucet account
-	keys       []*ecdsa.PrivateKey // private keys of accounts
-	corpus     [][]byte            // optional corpus to use elements from
-	accessList bool                // whether to create accesslist transactions
-	gasLimit   uint64              // gas limit per transaction
-	SlotTime   uint64              // slot time in seconds
+	N                             uint64 // number of transactions send per account
+	AccountsIncrementIntervalFlag int
+	faucet                        *ecdsa.PrivateKey   // private key of the faucet account
+	keys                          []*ecdsa.PrivateKey // private keys of accounts
+	corpus                        [][]byte            // optional corpus to use elements from
+	accessList                    bool                // whether to create accesslist transactions
+	gasLimit                      uint64              // gas limit per transaction
+	SlotTime                      uint64              // slot time in seconds
 
 	seed int64            // seed used for generating randomness
 	mut  *mutator.Mutator // Mutator based on the seed
@@ -101,6 +102,7 @@ func NewConfigFromContext(c *cli.Context) (*Config, error) {
 	}
 
 	slotTime := c.Uint64(flags.SlotTimeFlag.Name)
+	accountsIncrementIntervalFlag := c.Int(flags.AccountsIncrementIntervalFlag.Name)
 
 	// Setup seed
 	seed := c.Int64(flags.SeedFlag.Name)
@@ -124,16 +126,17 @@ func NewConfigFromContext(c *cli.Context) (*Config, error) {
 	}
 
 	return &Config{
-		backend:    backend,
-		N:          uint64(N),
-		faucet:     faucet,
-		accessList: !c.Bool(flags.NoALFlag.Name),
-		gasLimit:   uint64(gasLimit),
-		seed:       seed,
-		keys:       keys,
-		corpus:     corpus,
-		mut:        mut,
-		SlotTime:   slotTime,
+		backend:                       backend,
+		N:                             uint64(N),
+		AccountsIncrementIntervalFlag: accountsIncrementIntervalFlag,
+		faucet:                        faucet,
+		accessList:                    !c.Bool(flags.NoALFlag.Name),
+		gasLimit:                      uint64(gasLimit),
+		seed:                          seed,
+		keys:                          keys,
+		corpus:                        corpus,
+		mut:                           mut,
+		SlotTime:                      slotTime,
 	}, nil
 }
 
